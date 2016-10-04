@@ -1,4 +1,4 @@
-var map, featureList, pozosSearch = [], comisariasSearch = [];
+var map, featureList, plantas_aSearch = [], plantas_cSearch = [];
 
 $(window).resize(function() {
   sizeLayerControl();
@@ -86,18 +86,18 @@ function syncSidebar() {
   /* Empty sidebar features */
   $("#feature-list tbody").empty();
   /* Loop through theaters layer and add only features which are in the map bounds */
-  pozos.eachLayer(function (layer) {
-    if (map.hasLayer(pozoLayer)) {
+  plantas_a.eachLayer(function (layer) {
+    if (map.hasLayer(plantas_aLayer)) {
       if (map.getBounds().contains(layer.getLatLng())) {
-        $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/theater.png"></td><td class="feature-name">' + layer.feature.properties.etiqueta + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+        $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/theater.png"></td><td class="feature-name">' + layer.feature.properties.name + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
       }
     }
   });
   /* Loop through museums layer and add only features which are in the map bounds */
-  comisarias.eachLayer(function (layer) {
-    if (map.hasLayer(comisariaLayer)) {
+  plantas_c.eachLayer(function (layer) {
+    if (map.hasLayer(plantas_cLayer)) {
       if (map.getBounds().contains(layer.getLatLng())) {
-        $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">' + layer.feature.properties.nombre + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+        $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">' + layer.feature.properties.name + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
       }
     }
   });
@@ -203,8 +203,8 @@ var markerClusters = new L.MarkerClusterGroup({
 });
 
 /* Empty layer placeholder to add to layer control for listening when to add/remove theaters to markerClusters layer */
-var pozoLayer = L.geoJson(null);
-var pozos = L.geoJson(null, {
+var plantas_aLayer = L.geoJson(null);
+var plantas_a = L.geoJson(null, {
   pointToLayer: function (feature, latlng) {
     return L.marker(latlng, {
       icon: L.icon({
@@ -213,26 +213,26 @@ var pozos = L.geoJson(null, {
         iconAnchor: [12, 28],
         popupAnchor: [0, -25]
       }),
-      title: feature.properties.etiqueta,
+      title: feature.properties.name,
       riseOnHover: true
     });
   },
   onEachFeature: function (feature, layer) {
     if (feature.properties) {
-      var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Partido</th><td>" + feature.properties.nombre + "</td></tr>" + "<tr><th>Localidad</th><td>" + feature.properties.localidad + "</td></tr>" + "<tr><th>latitud</th><td>" + feature.properties.latitud + "</td></tr>" + "<tr><th>longitud</th><td>" + feature.properties.longitud + "</td></tr>" + "<table>";
+      var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Planta</th><td>" + feature.properties.name + "</td></tr>" + "<tr><th>Captación</th><td>" + feature.properties.captacion + "</td></tr>" + "<tr><th>Proceso</th><td>" + feature.properties.proceso + "</td></tr>" + "<tr><th>Caudal</th><td>" + feature.properties.caudal + "</td></tr>" + "<table>";
       layer.on({
         click: function (e) {
-          $("#feature-title").html(feature.properties.etiqueta);
+          $("#feature-title").html(feature.properties.name);
           $("#feature-info").html(content);
           $("#featureModal").modal("show");
           highlight.clearLayers().addLayer(L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], highlightStyle));
         }
       });
-      $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/theater.png"></td><td class="feature-name">' + layer.feature.properties.etiqueta + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
-      pozosSearch.push({
+      $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/theater.png"></td><td class="feature-name">' + layer.feature.properties.name + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+      plantas_aSearch.push({
         name: layer.feature.properties.etiqueta,
         address: layer.feature.properties.localidad,
-        source: "pozos",
+        source: "plantas_a",
         id: L.stamp(layer),
         lat: layer.feature.geometry.coordinates[1],
         lng: layer.feature.geometry.coordinates[0]
@@ -240,14 +240,14 @@ var pozos = L.geoJson(null, {
     }
   }
 });
-$.getJSON("data/pozos.geojson", function (data) {
-  pozos.addData(data);
-  map.addLayer(pozoLayer);
+$.getJSON("data/plantas_a.geojson", function (data) {
+  plantas_a.addData(data);
+  map.addLayer(plantas_aLayer);
 });
 
 /* Empty layer placeholder to add to layer control for listening when to add/remove museums to markerClusters layer */
-var comisariaLayer = L.geoJson(null);
-var comisarias = L.geoJson(null, {
+var plantas_cLayer = L.geoJson(null);
+var plantas_c = L.geoJson(null, {
   pointToLayer: function (feature, latlng) {
     return L.marker(latlng, {
       icon: L.icon({
@@ -256,13 +256,13 @@ var comisarias = L.geoJson(null, {
         iconAnchor: [12, 28],
         popupAnchor: [0, -25]
       }),
-      title: feature.properties.nombre,
+      title: feature.properties.name,
       riseOnHover: true
     });
   },
   onEachFeature: function (feature, layer) {
     if (feature.properties) {
-      var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Nombre</th><td>" + feature.properties.nombre + "</td></tr>" + "<tr><th>Clasificación</th><td>" + feature.properties.clasificac + "</td></tr>" + "<tr><th>Tipo</th><td>" + feature.properties.tipo + "</td></tr>" + "<tr><th>Dirección</th><td>" + feature.properties.direccion + "</td></tr>" + "<table>";
+      var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Nombre</th><td>" + feature.properties.name + "</td></tr>" + "<tr><th>Punto de Vuelco</th><td>" + feature.properties.punt_vuelc + "</td></tr>" + "<tr><th>Partido</th><td>" + feature.properties.nombre + "</td></tr>" + "<table>";
       layer.on({
         click: function (e) {
           $("#feature-title").html(feature.properties.nombre);
@@ -271,11 +271,11 @@ var comisarias = L.geoJson(null, {
           highlight.clearLayers().addLayer(L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], highlightStyle));
         }
       });
-      $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">' + layer.feature.properties.nombre + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
-      comisariasSearch.push({
-        name: layer.feature.properties.nombre,
-        address: layer.feature.properties.direccion,
-        source: "comisarias",
+      $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">' + layer.feature.properties.name + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+      plantas_cSearch.push({
+        name: layer.feature.properties.name,
+        address: layer.feature.properties.punt_vuelc,
+        source: "plantas_c",
         id: L.stamp(layer),
         lat: layer.feature.geometry.coordinates[1],
         lng: layer.feature.geometry.coordinates[0]
@@ -283,8 +283,8 @@ var comisarias = L.geoJson(null, {
     }
   }
 });
-$.getJSON("data/comisarias.geojson", function (data) {
-  comisarias.addData(data);
+$.getJSON("data/plantas_c.geojson", function (data) {
+  plantas_c.addData(data);
 });
 
 map = L.map("map", {
@@ -297,23 +297,23 @@ map = L.map("map", {
 
 /* Layer control listeners that allow for a single markerClusters layer */
 map.on("overlayadd", function(e) {
-  if (e.layer === pozoLayer) {
-    markerClusters.addLayer(pozos);
+  if (e.layer === plantas_aLayer) {
+    markerClusters.addLayer(plantas_a);
     syncSidebar();
   }
-  if (e.layer === comisariaLayer) {
-    markerClusters.addLayer(comisarias);
+  if (e.layer === plantas_cLayer) {
+    markerClusters.addLayer(plantas_c);
     syncSidebar();
   }
 });
 
 map.on("overlayremove", function(e) {
-  if (e.layer === pozoLayer) {
-    markerClusters.removeLayer(pozos);
+  if (e.layer === plantas_aLayer) {
+    markerClusters.removeLayer(plantas_a);
     syncSidebar();
   }
-  if (e.layer === comisariaLayer) {
-    markerClusters.removeLayer(comisarias);
+  if (e.layer === plantas_cLayer) {
+    markerClusters.removeLayer(plantas_c);
     syncSidebar();
   }
 });
@@ -399,8 +399,8 @@ var baseLayers = {
 
 var groupedOverlays = {
   "Points of Interest": {
-    "<img src='assets/img/theater.png' width='24' height='28'>&nbsp;Pozos": pozoLayer,
-    "<img src='assets/img/museum.png' width='24' height='28'>&nbsp;Comisarias": comisariaLayer
+    "<img src='assets/img/theater.png' width='24' height='28'>&nbsp;Plantas de Agua": plantas_aLayer,
+    "<img src='assets/img/museum.png' width='24' height='28'>&nbsp;Plantas de Cloaca": plantas_cLayer
   },
   "Reference": {
     "Partidos": wmsPartidos,
@@ -435,23 +435,23 @@ $(document).one("ajaxStop", function () {
   featureList = new List("features", {valueNames: ["feature-name"]});
   featureList.sort("feature-name", {order:"asc"});
 
-  var pozosBH = new Bloodhound({
-    name: "Pozos",
+  var plantas_aBH = new Bloodhound({
+    name: "plantas_a",
     datumTokenizer: function (d) {
       return Bloodhound.tokenizers.whitespace(d.name);
     },
     queryTokenizer: Bloodhound.tokenizers.whitespace,
-    local: pozosSearch,
+    local: plantas_aSearch,
     limit: 10
   });
 
-  var comisariasBH = new Bloodhound({
-    name: "comisarias",
+  var plantas_cBH = new Bloodhound({
+    name: "plantas_c",
     datumTokenizer: function (d) {
       return Bloodhound.tokenizers.whitespace(d.name);
     },
     queryTokenizer: Bloodhound.tokenizers.whitespace,
-    local: comisariasSearch,
+    local: plantas_cSearch,
     limit: 10
   });
 
@@ -485,8 +485,8 @@ $(document).one("ajaxStop", function () {
     },
     limit: 10
   });
-  pozosBH.initialize();
-  comisariasBH.initialize();
+  plantas_aBH.initialize();
+  plantas_cBH.initialize();
   geonamesBH.initialize();
 
   /* instantiate the typeahead UI */
@@ -497,18 +497,18 @@ $(document).one("ajaxStop", function () {
   }, {
     name: "Pozos",
     displayKey: "nombre",
-    source: pozosBH.ttAdapter(),
+    source: plantas_aBH.ttAdapter(),
     templates: {
-      header: "<h4 class='typeahead-header'><img src='assets/img/theater.png' width='24' height='28'>&nbsp;Pozos</h4>",
-      suggestion: Handlebars.compile(["{{partido}}<br>&nbsp;<small>{{localidad}}</small>"].join(""))
+      header: "<h4 class='typeahead-header'><img src='assets/img/theater.png' width='24' height='28'>&nbsp;Plantas de Agua</h4>",
+      suggestion: Handlebars.compile(["{{name}}<br>&nbsp;<small>{{captacion}}</small>"].join(""))
     }
   }, {
-    name: "comisarias",
+    name: "plantas_c",
     displayKey: "nombre",
-    source: comisariasBH.ttAdapter(),
+    source: plantas_cBH.ttAdapter(),
     templates: {
-      header: "<h4 class='typeahead-header'><img src='assets/img/museum.png' width='24' height='28'>&nbsp;Comisarias</h4>",
-      suggestion: Handlebars.compile(["{{nombre}}<br>&nbsp;<small>{{address}}</small>"].join(""))
+      header: "<h4 class='typeahead-header'><img src='assets/img/museum.png' width='24' height='28'>&nbsp;Plantas de Cloaca</h4>",
+      suggestion: Handlebars.compile(["{{name}}<br>&nbsp;<small>{{nombre}}</small>"].join(""))
     }
   }, {
     name: "GeoNames",
@@ -518,18 +518,18 @@ $(document).one("ajaxStop", function () {
       header: "<h4 class='typeahead-header'><img src='assets/img/globe.png' width='25' height='25'>&nbsp;GeoNames</h4>"
     }
   }).on("typeahead:selected", function (obj, datum) {
-    if (datum.source === "pozos") {
-      if (!map.hasLayer(pozoLayer)) {
-        map.addLayer(pozoLayer);
+    if (datum.source === "plantas_a") {
+      if (!map.hasLayer(plantas_aLayer)) {
+        map.addLayer(plantas_aLayer);
       }
       map.setView([datum.lat, datum.lng], 17);
       if (map._layers[datum.id]) {
         map._layers[datum.id].fire("click");
       }
     }
-    if (datum.source === "Comisarias") {
-      if (!map.hasLayer(comisariaLayer)) {
-        map.addLayer(comisariaLayer);
+    if (datum.source === "plantas_c") {
+      if (!map.hasLayer(plantas_cLayer)) {
+        map.addLayer(plantas_cLayer);
       }
       map.setView([datum.lat, datum.lng], 17);
       if (map._layers[datum.id]) {
