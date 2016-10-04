@@ -1,4 +1,4 @@
-var map, featureList, pozosSearch = [], museumSearch = [];
+var map, featureList, pozosSearch = [], comisariasSearch = [];
 
 $(window).resize(function() {
   sizeLayerControl();
@@ -94,10 +94,10 @@ function syncSidebar() {
     }
   });
   /* Loop through museums layer and add only features which are in the map bounds */
-  museums.eachLayer(function (layer) {
-    if (map.hasLayer(museumLayer)) {
+  comisarias.eachLayer(function (layer) {
+    if (map.hasLayer(comisariaLayer)) {
       if (map.getBounds().contains(layer.getLatLng())) {
-        $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">' + layer.feature.properties.NAME + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+        $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">' + layer.feature.properties.nombre + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
       }
     }
   });
@@ -129,7 +129,10 @@ var usgsImagery = L.layerGroup([L.tileLayer("http://basemap.nationalmap.gov/arcg
 /* Overlay Layers */
 var highlight = L.geoJson(null);
 var highlightStyle = {
-  stroke: false,
+  stroke: true,
+  color: "#000000",
+  weight: 5,
+  opacity: 0.6,
   fillColor: "#00FFFF",
   fillOpacity: 0.7,
   radius: 10
@@ -243,8 +246,8 @@ $.getJSON("data/pozos.geojson", function (data) {
 });
 
 /* Empty layer placeholder to add to layer control for listening when to add/remove museums to markerClusters layer */
-var museumLayer = L.geoJson(null);
-var museums = L.geoJson(null, {
+var comisariaLayer = L.geoJson(null);
+var comisarias = L.geoJson(null, {
   pointToLayer: function (feature, latlng) {
     return L.marker(latlng, {
       icon: L.icon({
@@ -253,26 +256,26 @@ var museums = L.geoJson(null, {
         iconAnchor: [12, 28],
         popupAnchor: [0, -25]
       }),
-      title: feature.properties.NAME,
+      title: feature.properties.nombre,
       riseOnHover: true
     });
   },
   onEachFeature: function (feature, layer) {
     if (feature.properties) {
-      var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Name</th><td>" + feature.properties.NAME + "</td></tr>" + "<tr><th>Phone</th><td>" + feature.properties.TEL + "</td></tr>" + "<tr><th>Address</th><td>" + feature.properties.ADRESS1 + "</td></tr>" + "<tr><th>Website</th><td><a class='url-break' href='" + feature.properties.URL + "' target='_blank'>" + feature.properties.URL + "</a></td></tr>" + "<table>";
+      var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Nombre</th><td>" + feature.properties.nombre + "</td></tr>" + "<tr><th>Clasificación</th><td>" + feature.properties.clasificac + "</td></tr>" + "<tr><th>Tipo</th><td>" + feature.properties.tipo + "</td></tr>" + "<tr><th>Dirección</th><td>" + feature.properties.direccion + "</td></tr>" + "<table>";
       layer.on({
         click: function (e) {
-          $("#feature-title").html(feature.properties.NAME);
+          $("#feature-title").html(feature.properties.nombre);
           $("#feature-info").html(content);
           $("#featureModal").modal("show");
           highlight.clearLayers().addLayer(L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], highlightStyle));
         }
       });
-      $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">' + layer.feature.properties.NAME + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
-      museumSearch.push({
-        name: layer.feature.properties.NAME,
-        address: layer.feature.properties.ADRESS1,
-        source: "Museums",
+      $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '" lat="' + layer.getLatLng().lat + '" lng="' + layer.getLatLng().lng + '"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">' + layer.feature.properties.nombre + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+      comisariasSearch.push({
+        name: layer.feature.properties.nombre,
+        address: layer.feature.properties.direccion,
+        source: "comisarias",
         id: L.stamp(layer),
         lat: layer.feature.geometry.coordinates[1],
         lng: layer.feature.geometry.coordinates[0]
@@ -280,14 +283,14 @@ var museums = L.geoJson(null, {
     }
   }
 });
-$.getJSON("data/DOITT_MUSEUM_01_13SEPT2010.geojson", function (data) {
-  museums.addData(data);
+$.getJSON("data/comisarias.geojson", function (data) {
+  comisarias.addData(data);
 });
 
 map = L.map("map", {
   zoom: 6,
   center: [-36.31073, -60.25376],
-  layers: [cartoLight, wmsPartidos,/*comisarias,*/ markerClusters, highlight],
+  layers: [cartoLight, wmsPartidos, markerClusters, highlight],
   zoomControl: false,
   attributionControl: false
 });
@@ -298,8 +301,8 @@ map.on("overlayadd", function(e) {
     markerClusters.addLayer(pozos);
     syncSidebar();
   }
-  if (e.layer === museumLayer) {
-    markerClusters.addLayer(museums);
+  if (e.layer === comisariaLayer) {
+    markerClusters.addLayer(comisarias);
     syncSidebar();
   }
 });
@@ -309,8 +312,8 @@ map.on("overlayremove", function(e) {
     markerClusters.removeLayer(pozos);
     syncSidebar();
   }
-  if (e.layer === museumLayer) {
-    markerClusters.removeLayer(museums);
+  if (e.layer === comisariaLayer) {
+    markerClusters.removeLayer(comisarias);
     syncSidebar();
   }
 });
@@ -397,7 +400,7 @@ var baseLayers = {
 var groupedOverlays = {
   "Points of Interest": {
     "<img src='assets/img/theater.png' width='24' height='28'>&nbsp;Pozos": pozoLayer,
-    "<img src='assets/img/museum.png' width='24' height='28'>&nbsp;Museums": museumLayer
+    "<img src='assets/img/museum.png' width='24' height='28'>&nbsp;Comisarias": comisariaLayer
   },
   "Reference": {
     "Partidos": wmsPartidos,
@@ -442,13 +445,13 @@ $(document).one("ajaxStop", function () {
     limit: 10
   });
 
-  var museumsBH = new Bloodhound({
-    name: "Museums",
+  var comisariasBH = new Bloodhound({
+    name: "comisarias",
     datumTokenizer: function (d) {
       return Bloodhound.tokenizers.whitespace(d.name);
     },
     queryTokenizer: Bloodhound.tokenizers.whitespace,
-    local: museumSearch,
+    local: comisariasSearch,
     limit: 10
   });
 
@@ -483,7 +486,7 @@ $(document).one("ajaxStop", function () {
     limit: 10
   });
   pozosBH.initialize();
-  museumsBH.initialize();
+  comisariasBH.initialize();
   geonamesBH.initialize();
 
   /* instantiate the typeahead UI */
@@ -493,19 +496,19 @@ $(document).one("ajaxStop", function () {
     hint: false
   }, {
     name: "Pozos",
-    displayKey: "name",
+    displayKey: "nombre",
     source: pozosBH.ttAdapter(),
     templates: {
       header: "<h4 class='typeahead-header'><img src='assets/img/theater.png' width='24' height='28'>&nbsp;Pozos</h4>",
       suggestion: Handlebars.compile(["{{partido}}<br>&nbsp;<small>{{localidad}}</small>"].join(""))
     }
   }, {
-    name: "Museums",
-    displayKey: "name",
-    source: museumsBH.ttAdapter(),
+    name: "comisarias",
+    displayKey: "nombre",
+    source: comisariasBH.ttAdapter(),
     templates: {
-      header: "<h4 class='typeahead-header'><img src='assets/img/museum.png' width='24' height='28'>&nbsp;Museums</h4>",
-      suggestion: Handlebars.compile(["{{name}}<br>&nbsp;<small>{{address}}</small>"].join(""))
+      header: "<h4 class='typeahead-header'><img src='assets/img/museum.png' width='24' height='28'>&nbsp;Comisarias</h4>",
+      suggestion: Handlebars.compile(["{{nombre}}<br>&nbsp;<small>{{address}}</small>"].join(""))
     }
   }, {
     name: "GeoNames",
@@ -524,9 +527,9 @@ $(document).one("ajaxStop", function () {
         map._layers[datum.id].fire("click");
       }
     }
-    if (datum.source === "Museums") {
-      if (!map.hasLayer(museumLayer)) {
-        map.addLayer(museumLayer);
+    if (datum.source === "Comisarias") {
+      if (!map.hasLayer(comisariaLayer)) {
+        map.addLayer(comisariaLayer);
       }
       map.setView([datum.lat, datum.lng], 17);
       if (map._layers[datum.id]) {
