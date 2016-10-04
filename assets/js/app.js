@@ -1,4 +1,4 @@
-var map, featureList, partidosSearch = [], pozosSearch = [], museumSearch = [];
+var map, featureList, pozosSearch = [], museumSearch = [];
 
 $(window).resize(function() {
   sizeLayerControl();
@@ -19,12 +19,6 @@ $(document).on("mouseout", ".feature-row", clearHighlight);
 
 $("#about-btn").click(function() {
   $("#aboutModal").modal("show");
-  $(".navbar-collapse.in").collapse("hide");
-  return false;
-});
-
-$("#full-extent-btn").click(function() {
-  map.fitBounds(partidos.getBounds());
   $(".navbar-collapse.in").collapse("hide");
   return false;
 });
@@ -141,37 +135,15 @@ var highlightStyle = {
   radius: 10
 };
 
-var partidos = L.geoJson(null, {
-  style: function (feature) {
-    return {
-      color: "black",
-      fill: false,
-      opacity: 1,
-      clickable: false
-    };
-  },
-  onEachFeature: function (feature, layer) {
-    partidosSearch.push({
-      name: layer.feature.properties.nombre,
-      source: "Partidos",
-      id: L.stamp(layer),
-      bounds: layer.getBounds()
-    });
-  }
-});
-$.getJSON("data/partidos.geojson", function (data) {
-	  partidos.addData(data);
-});
-
-//Create a color dictionary based off of subway route_id
+/*Create a color dictionary based off of subway route_id
 var comisariasColors = {"1":"#ff3135", "2":"#ff3135", "3":"ff3135", "4":"#009b2e",
     "5":"#009b2e", "6":"#009b2e", "7":"#ce06cb", "A":"#fd9a00", "C":"#fd9a00",
     "E":"#fd9a00", "SI":"#fd9a00","H":"#fd9a00", "Air":"#ffff00", "B":"#ffff00",
     "D":"#ffff00", "F":"#ffff00", "M":"#ffff00", "G":"#9ace00", "FS":"#6e6e6e",
     "GS":"#6e6e6e", "J":"#976900", "Z":"#976900", "L":"#969696", "N":"#ffff00",
-    "Q":"#ffff00", "R":"#ffff00" };
+    "Q":"#ffff00", "R":"#ffff00" };*/
 
-var comisarias = L.geoJson(null, {
+/*var comisarias = L.geoJson(null, {
   style: function (feature) {
       return {
         color: comisariasColors[feature.properties.gid],
@@ -211,6 +183,12 @@ var comisarias = L.geoJson(null, {
 });
 $.getJSON("data/comisarias.geojson", function (data) {
   comisarias.addData(data);
+});
+*/
+var wmsPartidos = L.tileLayer.wms("http://geobasig.com.ar/geoserver29/Geodesia/wms?", {
+  layers: 'Provincia',
+  format: 'image/png',
+  transparent: true,
 });
 
 /* Single marker cluster layer to hold all clusters */
@@ -308,10 +286,8 @@ $.getJSON("data/DOITT_MUSEUM_01_13SEPT2010.geojson", function (data) {
 
 map = L.map("map", {
   zoom: 6,
-  //center: [40.702222, -73.979378],
   center: [-36.31073, -60.25376],
-//  layers: [cartoLight, boroughs, markerClusters, highlight],
-  layers: [cartoLight, comisarias, partidos, markerClusters, highlight],
+  layers: [cartoLight, wmsPartidos,/*comisarias,*/ markerClusters, highlight],
   zoomControl: false,
   attributionControl: false
 });
@@ -424,8 +400,8 @@ var groupedOverlays = {
     "<img src='assets/img/museum.png' width='24' height='28'>&nbsp;Museums": museumLayer
   },
   "Reference": {
-    "Partidos": partidos,
-    "Comisarias": comisarias
+    "Partidos": wmsPartidos,
+    //"Comisarias": comisarias
   }
 };
 
@@ -453,20 +429,8 @@ $("#featureModal").on("hidden.bs.modal", function (e) {
 $(document).one("ajaxStop", function () {
   $("#loading").hide();
   sizeLayerControl();
-  /* Fit map to boroughs bounds */
-  map.fitBounds(partidos.getBounds());
   featureList = new List("features", {valueNames: ["feature-name"]});
   featureList.sort("feature-name", {order:"asc"});
-
-  var partidosBH = new Bloodhound({
-    name: "Partidos",
-    datumTokenizer: function (d) {
-      return Bloodhound.tokenizers.whitespace(d.name);
-    },
-    queryTokenizer: Bloodhound.tokenizers.whitespace,
-    local: partidosSearch,
-    limit: 10
-  });
 
   var pozosBH = new Bloodhound({
     name: "Pozos",
@@ -518,7 +482,6 @@ $(document).one("ajaxStop", function () {
     },
     limit: 10
   });
-  partidosBH.initialize();
   pozosBH.initialize();
   museumsBH.initialize();
   geonamesBH.initialize();
@@ -528,13 +491,6 @@ $(document).one("ajaxStop", function () {
     minLength: 3,
     highlight: true,
     hint: false
-  }, {
-    name: "Partidos",
-    displayKey: "nombre",
-    source: partidosBH.ttAdapter(),
-    templates: {
-      header: "<h4 class='typeahead-header'>Partido</h4>"
-    }
   }, {
     name: "Pozos",
     displayKey: "name",
@@ -559,9 +515,6 @@ $(document).one("ajaxStop", function () {
       header: "<h4 class='typeahead-header'><img src='assets/img/globe.png' width='25' height='25'>&nbsp;GeoNames</h4>"
     }
   }).on("typeahead:selected", function (obj, datum) {
-    if (datum.source === "partidos") {
-      map.fitBounds(datum.bounds);
-    }
     if (datum.source === "pozos") {
       if (!map.hasLayer(pozoLayer)) {
         map.addLayer(pozoLayer);
