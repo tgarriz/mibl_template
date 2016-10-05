@@ -290,13 +290,22 @@ $.getJSON("data/plantas_c.geojson", function (data) {
   plantas_c.addData(data);
 });
 
-map = L.map("map", {
-  zoom: 6,
-  center: [-36.31073, -60.25376],
-  layers: [cartoLight, osm, wmsPartidos, markerClusters, highlight],
-  zoomControl: false,
-  attributionControl: false
-});
+map = L.map("map", 
+  {
+    /*fullscreenControl: {
+        pseudoFullscreen: false
+    },*/
+    fullscreenControl: true,
+    fullscreenControlOptions: {
+      position: 'topleft'
+    }, 
+    zoom: 6,
+    center: [-36.31073, -60.25376],
+    layers: [cartoLight, osm, wmsPartidos, markerClusters, highlight],
+    zoomControl: false,
+    attributionControl: false
+  }
+);
 new L.Control.GeoSearch({
     provider: new L.GeoSearch.Provider.OpenStreetMap()
 }).addTo(map);
