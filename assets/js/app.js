@@ -125,6 +125,9 @@ var usgsImagery = L.layerGroup([L.tileLayer("http://basemap.nationalmap.gov/arcg
   transparent: true,
   attribution: "Aerial Imagery courtesy USGS"
 })]);
+var osm = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+	    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	    });
 
 /* Overlay Layers */
 var highlight = L.geoJson(null);
@@ -290,10 +293,14 @@ $.getJSON("data/plantas_c.geojson", function (data) {
 map = L.map("map", {
   zoom: 6,
   center: [-36.31073, -60.25376],
-  layers: [cartoLight, wmsPartidos, markerClusters, highlight],
+  layers: [cartoLight, osm, wmsPartidos, markerClusters, highlight],
   zoomControl: false,
   attributionControl: false
 });
+new L.Control.GeoSearch({
+    provider: new L.GeoSearch.Provider.OpenStreetMap()
+}).addTo(map);
+
 
 /* Layer control listeners that allow for a single markerClusters layer */
 map.on("overlayadd", function(e) {
@@ -394,7 +401,8 @@ if (document.body.clientWidth <= 767) {
 
 var baseLayers = {
   "Street Map": cartoLight,
-  "Aerial Imagery": usgsImagery
+  "Aerial Imagery": usgsImagery,
+  "OSM": osm
 };
 
 var groupedOverlays = {
