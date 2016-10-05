@@ -115,19 +115,12 @@ var cartoLight = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net
   maxZoom: 19,
   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
 });
-var usgsImagery = L.layerGroup([L.tileLayer("http://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}", {
-  maxZoom: 15,
-}), L.tileLayer.wms("http://raster.nationalmap.gov/arcgis/services/Orthoimagery/USGS_EROS_Ortho_SCALE/ImageServer/WMSServer?", {
-  minZoom: 16,
-  maxZoom: 19,
-  layers: "0",
-  format: 'image/jpeg',
-  transparent: true,
-  attribution: "Aerial Imagery courtesy USGS"
-})]);
 var osm = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-	    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-	    });
+   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+   maxZoom: 19
+});
+var ggl = new L.Google();
+var ggl2 = new L.Google('HYBRID');
 
 /* Overlay Layers */
 var highlight = L.geoJson(null);
@@ -195,6 +188,13 @@ var wmsPartidos = L.tileLayer.wms("http://geobasig.com.ar/geoserver29/Geodesia/w
   layers: 'Provincia',
   format: 'image/png',
   transparent: true,
+});
+
+var wmsParcelario = L.tileLayer.wms("http://geobasig.com.ar/geoserver29/Geodesia/wms?", {
+  layers: 'parcelas',
+  format: 'image/png',
+  transparent: true,
+  maxZoom: 19
 });
 
 /* Single marker cluster layer to hold all clusters */
@@ -301,7 +301,7 @@ map = L.map("map",
     }, 
     zoom: 6,
     center: [-36.31073, -60.25376],
-    layers: [cartoLight, osm, wmsPartidos, markerClusters, highlight],
+    layers: [cartoLight, ggl, ggl2, osm, wmsPartidos, markerClusters, highlight],
     zoomControl: false,
     attributionControl: false
   }
@@ -410,17 +410,19 @@ if (document.body.clientWidth <= 767) {
 
 var baseLayers = {
   "Street Map": cartoLight,
-  "Aerial Imagery": usgsImagery,
-  "OSM": osm
+  "OSM": osm,
+  "Google": ggl,
+  "Google Hybrid": ggl2
 };
 
 var groupedOverlays = {
-  "Points of Interest": {
+  "Plantas": {
     "<img src='assets/img/theater.png' width='24' height='28'>&nbsp;Plantas de Agua": plantas_aLayer,
     "<img src='assets/img/museum.png' width='24' height='28'>&nbsp;Plantas de Cloaca": plantas_cLayer
   },
   "Reference": {
     "Partidos": wmsPartidos,
+    "Parcelario": wmsParcelario
     //"Comisarias": comisarias
   }
 };
